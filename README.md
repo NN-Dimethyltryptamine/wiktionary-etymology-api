@@ -17,7 +17,8 @@ Endpoints:
     - `word` - The word you wish to find the etymology for.
 
 Response JSONs are in the following format:
-```[
+```
+[
     [], // list of languages the word is found in
     {
         "language1": "etymology1",      // language & etymology in order of list of languages preceding
@@ -26,3 +27,5 @@ Response JSONs are in the following format:
     }
 ]
 ```
+
+If the word has no etymologies for whatever reason (e.g. it's a phrase, it's very rare, it's a wonder of nature, etc) the API will return an empty object `[]`.

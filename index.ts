@@ -71,7 +71,7 @@ app.get("/get", async (req: Request, res: Response) => {
     let word = req.query.word;
     const content = await fetchPage(`https://en.wiktionary.org/wiki/${word}`);
     if(!hasContent(content)){
-        res.send({});
+        res.send([]);
     }
     else{
         const content2 = getLanguages(content);
