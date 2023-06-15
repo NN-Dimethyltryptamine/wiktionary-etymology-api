@@ -14,6 +14,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const axios_1 = __importDefault(require("axios"));
 const cheerio_1 = __importDefault(require("cheerio"));
+const express = require('express');
+const app = express();
+const port = 3000;
 function fetchPage(url) {
     const HTMLData = axios_1.default
         .get(url)
@@ -24,9 +27,11 @@ function fetchPage(url) {
     });
     return HTMLData;
 }
-// function hasContent(html: string, selector: string): boolean {
-//     #mw-content-text
-// }
+function hasContent(html) {
+    const $ = cheerio_1.default.load(html);
+    const content = $("#toc > ul");
+    return content.length > 0;
+}
 function getLanguages(html) {
     const $ = cheerio_1.default.load(html);
     const content = $("#toc > ul").text();
@@ -63,11 +68,29 @@ function getEtymologies(html, languages) {
     }
     return etymologies;
 }
-(function () {
-    return __awaiter(this, void 0, void 0, function* () {
-        const content = yield fetchPage('https://en.wiktionary.org/wiki/pool');
+app.get("/", (req, res) => {
+    console.log(`Request received: ${req.url}`);
+    console.dir(req.query);
+    res.send("AYlmao");
+});
+app.get("/get", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let word = req.query.word;
+    const content = yield fetchPage(`https://en.wiktionary.org/wiki/${word}`);
+    if (!hasContent(content)) {
+        res.send({});
+    }
+    else {
         const content2 = getLanguages(content);
-        console.log(content2);
-        console.log(getEtymologies(content, content2));
-    });
-})();
+        const etymologies = getEtymologies(content, content2);
+        res.send([content2, etymologies]);
+    }
+}));
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
+});
+// (async function () {
+//     const content = await fetchPage('https://en.wiktionary.org/wiki/pool');
+//     const content2 = getLanguages(content);
+//     console.log(content2);
+//     console.log(getEtymologies(content, content2));
+// })();

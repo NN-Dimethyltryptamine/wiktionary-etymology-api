@@ -76,8 +76,12 @@ app.get("/get", async (req: Request, res: Response) => {
     else{
         const content2 = getLanguages(content);
         const etymologies = getEtymologies(content, content2);
-        res.send(etymologies);
+        res.send([content2, etymologies]);
     }
+});
+
+app.listen(port, () => {
+    console.log(`Server running on port ${port}`);
 });
 
 // (async function () {
