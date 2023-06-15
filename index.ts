@@ -1,5 +1,9 @@
 import axios from 'axios';
 import cheerio from 'cheerio';
+import { Request, Response } from 'express';
+const express = require('express');
+const app = express();
+const port = 3000;
 
 function fetchPage(url: string): Promise<string> {
     const HTMLData = axios
@@ -13,9 +17,11 @@ function fetchPage(url: string): Promise<string> {
     return HTMLData;
 }
 
-// function hasContent(html: string, selector: string): boolean {
-//     #mw-content-text
-// }
+function hasContent(html: string): boolean {
+    const $ = cheerio.load(html);
+    const content = $("#toc > ul");
+    return content.length > 0;
+}
 
 function getLanguages(html: string): RegExpMatchArray {
     const $ = cheerio.load(html);
@@ -55,9 +61,28 @@ function getEtymologies(html: string, languages: string[]): {[key: string]: stri
     return etymologies;
 }
 
-(async function () {
-    const content = await fetchPage('https://en.wiktionary.org/wiki/pool');
-    const content2 = getLanguages(content);
-    console.log(content2);
-    console.log(getEtymologies(content, content2));
-})();
+app.get("/", (req: Request, res: Response) => {
+    console.log(`Request received: ${req.url}`);
+    console.dir(req.query);
+    res.send("AYlmao");
+});
+
+app.get("/get", async (req: Request, res: Response) => {
+    let word = req.query.word;
+    const content = await fetchPage(`https://en.wiktionary.org/wiki/${word}`);
+    if(!hasContent(content)){
+        res.send({});
+    }
+    else{
+        const content2 = getLanguages(content);
+        const etymologies = getEtymologies(content, content2);
+        res.send(etymologies);
+    }
+});
+
+// (async function () {
+//     const content = await fetchPage('https://en.wiktionary.org/wiki/pool');
+//     const content2 = getLanguages(content);
+//     console.log(content2);
+//     console.log(getEtymologies(content, content2));
+// })();
